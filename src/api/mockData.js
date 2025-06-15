@@ -46,3 +46,14 @@ export let mockFacturen = [
     { id: uuidv4(), factuur_nr: 'F2024-002', save_path: '/invoices/F2024-002.pdf', datum: pastDate(40), type: 'verkoop', transaction_id: mockTransacties[4].id },
     { id: uuidv4(), factuur_nr: 'F2024-003', save_path: '/invoices/F2024-003.pdf', datum: pastDate(2), type: 'verkoop', transaction_id: mockTransacties[6].id },
 ];
+
+export let mockUser = {
+        name: 'Jane Doe',
+        email: 'jane.doe@fintechcorp.com',
+        avatarUrl: 'https://placehold.co/100x100/94a3b8/FFFFFF/png?text=JD'
+    }
+
+export let mockOrg = {
+        name: 'FinTech Corp',
+        logoUrl: 'https://placehold.co/100x100/3B82F6/FFFFFF/png?text=FC'
+    }

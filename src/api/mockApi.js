@@ -1,6 +1,6 @@
 // src/api/mockApi.js
 import { v4 as uuidv4 } from 'uuid';
-import { mockRekeningen, mockFacturen, mockTransacties, mockParties } from './mockData';
+import { mockRekeningen, mockFacturen, mockTransacties, mockParties, mockOrg, mockUser } from './mockData';
 
 // Simulate network delay
 const apiCall = (data, delay = 300) => {
@@ -59,3 +59,21 @@ export const getTransactions = ({ rekeningId = null, partyId = null } = {}) => {
     return apiCall(transactions);
 };
 export const getTransactionById = (id) => apiCall(mockTransacties.find(t => t.id === id));
+
+
+// --- NEW FUNCTIONS ---
+export const getOrganization = () => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(mockOrg);
+        }, 300); // Simulate network delay
+    });
+};
+
+export const getUser = () => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(mockUser);
+        }, 300); // Simulate network delay
+    });
+};

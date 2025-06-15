@@ -19,7 +19,19 @@
                     <option value="INCOME">Income</option>
                     <option value="EXPENSE">Expense</option>
                 </select>
-                <DateRangeFilter @update="dateFilter = $event" />
+                <!-- Added a key to ensure the component resets when filters are cleared -->
+                <DateRangeFilter :key="dateFilterKey" @update="dateFilter = $event" />
+                
+                <!-- 4) Clear Filters Button -->
+                <button 
+                  @click="clearFilters" 
+                  class="flex items-center px-3 py-2 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  title="Clear all filters"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
             </div>
         </div>
         <TransactionTable :transactions="filteredTransactions" @row-click="showTransactionDetail" />
@@ -33,26 +45,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { getRekeningById, getTransactions } from '../api/mockApi';
 import SaldoChart from '../components/charts/SaldoChart.vue';
 import TransactionTable from '../components/specific/TransactionTable.vue';
 import DateRangeFilter from '../components/common/DateRangeFilter.vue';
 import DetailSidebar from '../components/common/DetailSidebar.vue';
 import TransactionDetail from '../components/specific/TransactionDetail.vue';
+
 const props = defineProps({ id: String });
 
 const rekening = ref(null);
 const allTransactions = ref([]);
-const loading = ref(false);
+const loading = ref(true);
 
 const typeFilter = ref('all');
 const dateFilter = ref({ start: null, end: null });
-const selectedTransactionId = ref(null); // NEW: Track selected transaction
+const dateFilterKey = ref(0); // NEW: Key for re-rendering DateRangeFilter
+const selectedTransactionId = ref(null);
 
 const showTransactionDetail = (transaction) => {
     selectedTransactionId.value = transaction.id;
 };
+
 const fetchData = async (rekeningId) => {
     if (!rekeningId) {
         rekening.value = null;
@@ -69,6 +84,13 @@ const fetchData = async (rekeningId) => {
     loading.value = false;
 };
 
+// NEW: Function to clear all active filters
+const clearFilters = () => {
+    typeFilter.value = 'all';
+    dateFilter.value = { start: null, end: null };
+    dateFilterKey.value++; // Increment key to force DateRangeFilter to re-render and reset
+};
+
 const filteredTransactions = computed(() => {
     return allTransactions.value.filter(t => {
         const typeMatch = typeFilter.value === 'all' || t.type === typeFilter.value;
@@ -77,16 +99,21 @@ const filteredTransactions = computed(() => {
         const transactionDate = new Date(t.datum);
 
         let dateMatch = true;
-        if(startDate && endDate) {
-            dateMatch = transactionDate >= startDate && transactionDate <= endDate;
+        if (startDate && endDate) {
+            // Adjust end date to be inclusive of the entire day
+            const adjustedEndDate = new Date(endDate);
+            adjustedEndDate.setHours(23, 59, 59, 999);
+            dateMatch = transactionDate >= startDate && transactionDate <= adjustedEndDate;
         } else if (startDate) {
             dateMatch = transactionDate >= startDate;
         } else if (endDate) {
-            dateMatch = transactionDate <= endDate;
+             const adjustedEndDate = new Date(endDate);
+            adjustedEndDate.setHours(23, 59, 59, 999);
+            dateMatch = transactionDate <= adjustedEndDate;
         }
 
         return typeMatch && dateMatch;
-    });
+    }).sort((a, b) => new Date(b.datum) - new Date(a.datum)); // Also added sorting
 });
 
 watch(() => props.id, (newId) => {
