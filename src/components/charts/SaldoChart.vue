@@ -27,29 +27,47 @@ const chartData = computed(() => {
   // Sort transactions by date ascending
   const sortedTransactions = [...props.transactions].sort((a, b) => new Date(a.datum) - new Date(b.datum));
   
-  const labels = ['Start'];
-  const dataPoints = [props.initialSaldo];
-  let currentSaldo = props.initialSaldo;
+  const labels = ['Start Saldo'];
+  const dataPointsAll = [props.initialSaldo];
+  const dataPointsPaid = [props.initialSaldo];
+
+  let currentSaldoAll = props.initialSaldo;
+  let currentSaldoPaid = props.initialSaldo;
 
   sortedTransactions.forEach(t => {
     labels.push(new Date(t.datum).toLocaleDateString('nl-NL'));
-    if(t.type === 'INCOME') {
-      currentSaldo += t.bedrag;
+    
+    let change = 0;
+    if (t.type === 'INCOME') {
+      change = t.bedrag;
     } else if (t.type === 'EXPENSE') {
-      currentSaldo -= t.bedrag;
+      change = -t.bedrag;
     }
-    // 'TRANSFER' is neutral for this account's perspective in this simple model
-    dataPoints.push(currentSaldo);
+    
+    currentSaldoAll += change;
+    dataPointsAll.push(currentSaldoAll);
+
+    if (t.status === 'PAID') {
+      currentSaldoPaid += change;
+    }
+    dataPointsPaid.push(currentSaldoPaid);
   });
 
   return {
     labels,
     datasets: [
       {
-        label: 'Saldo Ontwikkeling',
-        backgroundColor: '#3b82f6',
-        borderColor: '#3b82f6',
-        data: dataPoints,
+        label: 'Verwachte Saldo',
+        backgroundColor: '#93c5fd', // Lighter blue
+        borderColor: '#3b82f6',     // Blue-500
+        data: dataPointsAll,
+        tension: 0.1,
+      },
+      {
+        label: 'Betaalde Saldo',
+        backgroundColor: '#a7f3d0', // Lighter green
+        borderColor: '#10b981',     // Green-500
+        data: dataPointsPaid,
         tension: 0.1,
       },
     ],

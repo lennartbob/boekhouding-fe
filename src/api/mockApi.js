@@ -94,6 +94,43 @@ export const deleteTransaction = (transactionId) => {
     return apiCall({ success });
 };
 
+
+export const getBtwOverview = (year) => {
+    const getQuarter = (date) => `Q${Math.floor(new Date(date).getMonth() / 3) + 1}`;
+    
+    const overview = {
+        Q1: { verkoop: { bedrag: 0, btw: 0 }, inkoop: { bedrag: 0, btw: 0 } },
+        Q2: { verkoop: { bedrag: 0, btw: 0 }, inkoop: { bedrag: 0, btw: 0 } },
+        Q3: { verkoop: { bedrag: 0, btw: 0 }, inkoop: { bedrag: 0, btw: 0 } },
+        Q4: { verkoop: { bedrag: 0, btw: 0 }, inkoop: { bedrag: 0, btw: 0 } },
+    };
+
+    const yearTransactions = mockTransacties.filter(t => new Date(t.datum).getFullYear() === year);
+
+    yearTransactions.forEach(t => {
+        if (t.type === 'TRANSFER') return;
+
+        const quarter = getQuarter(t.datum);
+        const btwAmount = t.bedrag * t.btw;
+
+        if (t.type === 'INCOME') { // Verkoop
+            overview[quarter].verkoop.bedrag += t.bedrag;
+            overview[quarter].verkoop.btw += btwAmount;
+        } else if (t.type === 'EXPENSE') { // Inkoop
+            overview[quarter].inkoop.bedrag += t.bedrag;
+            overview[quarter].inkoop.btw += btwAmount;
+        }
+    });
+    
+    // Calculate BTW to pay/receive for each quarter
+    Object.keys(overview).forEach(q => {
+        overview[q].btw_te_betalen = overview[q].verkoop.btw - overview[q].inkoop.btw;
+    });
+
+    return apiCall(overview);
+};
+
+
 export const getOrganization = () => {
     return new Promise(resolve => {
         setTimeout(() => {

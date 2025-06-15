@@ -47,9 +47,7 @@
 
       <!-- Delete Rekening Section -->
 <div class="mt-8 p-4 border-red-300 bg-red-10 rounded-lg p-5">
-  <h3 class="text-lg font-semibold text-red-800">Gevaarzone</h3>
   <p class="mt-1 text-sm text-red-600">
-    Het verwijderen van een rekening kan niet ongedaan worden gemaakt.
     <span v-if="allTransactions.length > 0">Deze rekening kan niet worden verwijderd omdat er transacties aan gekoppeld zijn.</span>
   </p>
   <div class="mt-4">
