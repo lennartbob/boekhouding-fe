@@ -1,7 +1,7 @@
 <!-- src/views/FacturenView.vue -->
 <template>
   <div>
-    <h2 class="text-2xl font-semibold text-gray-700">Facturen</h2>
+    <h2 class="text-4xl font-semibold text-gray-700">Facturen</h2>
     <div class="mt-8">
       <AppTable :headers="headers" :items="facturen" @row-click="showFactuurDetail">
         <template #cell(datum)="{ value }">

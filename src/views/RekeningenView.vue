@@ -4,7 +4,7 @@
     <div v-if="loading" class="text-center text-gray-500">Loading account details...</div>
     
     <div v-else-if="rekening">
-      <h2 class="text-2xl font-semibold text-gray-700">{{ rekening.name }} - {{ formatCurrency(rekening.saldo) }}</h2>
+      <h2 class="text-4xl font-semibold text-gray-700">{{ rekening.name }} {{ formatCurrency(rekening.saldo) }}</h2>
 
       <div class="mt-8">
         <SaldoChart :transactions="allTransactions" :initial-saldo="rekening.saldo"/>

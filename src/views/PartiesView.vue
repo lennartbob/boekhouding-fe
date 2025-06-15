@@ -2,17 +2,17 @@
 <template>
   <div>
     <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-semibold text-gray-700">Parties</h2>
+        <h2 class="text-4xl font-semibold text-gray-700">Parties</h2>
         <BaseButton @click="showAddPartyModal = true">New Party</BaseButton>
     </div>
     <div class="mt-8 space-y-8">
       <div>
-        <h3 class="text-xl font-semibold text-gray-600 mb-4">Debiteuren (Debtors)</h3>
+        <h3 class="text-xl font-semibold text-gray-600 mb-4">Debiteuren</h3>
         <AppTable :headers="headers" :items="debtors" @row-click="showPartyDetail" />
       </div>
 
       <div>
-        <h3 class="text-xl font-semibold text-gray-600 mb-4">Crediteuren (Creditors)</h3>
+        <h3 class="text-xl font-semibold text-gray-600 mb-4">Crediteuren</h3>
         <AppTable :headers="headers" :items="creditors" @row-click="showPartyDetail" />
       </div>
     </div>

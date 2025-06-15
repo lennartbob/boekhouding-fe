@@ -1,6 +1,6 @@
 <!-- src/components/specific/BtwOverview.vue -->
 <template>
-    <div class="bg-gray-50 p-10 rounded-lg">
+    <div class="bg-gray-40s p-10 rounded-lg">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold text-gray-800">BTW Overzicht</h2>
             <div class="flex items-center space-x-2">
