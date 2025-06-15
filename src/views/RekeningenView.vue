@@ -36,24 +36,69 @@
         </div>
         <TransactionTable :transactions="filteredTransactions" @row-click="showTransactionDetail" />
         <DetailSidebar title="Transaction Details" :show="!!selectedTransactionId" @close="selectedTransactionId = null">
-            <TransactionDetail v-if="selectedTransactionId" :transaction-id="selectedTransactionId" />
+            <TransactionDetail 
+                v-if="selectedTransactionId" 
+                :transaction-id="selectedTransactionId"
+                @deleted="handleTransactionDeleted"
+                @updated="handleTransactionUpdated"
+            />
         </DetailSidebar>
       </div>
+
+      <!-- Delete Rekening Section -->
+<div class="mt-8 p-4 border-red-300 bg-red-10 rounded-lg p-5">
+  <h3 class="text-lg font-semibold text-red-800">Gevaarzone</h3>
+  <p class="mt-1 text-sm text-red-600">
+    Het verwijderen van een rekening kan niet ongedaan worden gemaakt.
+    <span v-if="allTransactions.length > 0">Deze rekening kan niet worden verwijderd omdat er transacties aan gekoppeld zijn.</span>
+  </p>
+  <div class="mt-4">
+    <button
+      @click="showDeleteModal = true"
+      :disabled="allTransactions.length > 0"
+      class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed"
+    >
+      Verwijder Rekening
+    </button>
+  </div>
+</div>
     </div>
 
   </div>
+
+  <!-- Delete Rekening Confirmation Modal -->
+  <BaseModal :show="showDeleteModal" @close="showDeleteModal = false">
+      <template #title>Verwijder Rekening</template>
+      <template #body>
+          <p class="text-sm text-gray-600 mb-4">
+              Dit is een permanente actie. Om door te gaan, typ de naam van de rekening: <strong class="text-gray-900">{{ rekening?.name }}</strong>
+          </p>
+          <input type="text" v-model="deleteConfirmName" class="form-input" placeholder="Typ de naam van de rekening">
+          <p v-if="deleteError" class="text-sm text-red-500 mt-2">{{ deleteError }}</p>
+      </template>
+      <template #footer>
+          <BaseButton type="button" @click="showDeleteModal = false" class="bg-gray-200 text-gray-800 hover:bg-gray-300">Cancel</BaseButton>
+          <BaseButton @click="handleDeleteRekening" :disabled="deleteConfirmName !== rekening?.name" class="bg-red-600 hover:bg-red-700 disabled:bg-red-300">
+              Delete Rekening
+          </BaseButton>
+      </template>
+  </BaseModal>
 </template>
 
 <script setup>
 import { ref, watch, computed } from 'vue';
-import { getRekeningById, getTransactions } from '../api/mockApi';
+import { useRouter } from 'vue-router';
+import { getRekeningById, getTransactions, deleteRekening } from '../api/mockApi';
 import SaldoChart from '../components/charts/SaldoChart.vue';
 import TransactionTable from '../components/specific/TransactionTable.vue';
 import DateRangeFilter from '../components/common/DateRangeFilter.vue';
 import DetailSidebar from '../components/common/DetailSidebar.vue';
 import TransactionDetail from '../components/specific/TransactionDetail.vue';
+import BaseModal from '../components/common/BaseModal.vue';
+import BaseButton from '../components/common/BaseButton.vue';
 
 const props = defineProps({ id: String });
+const router = useRouter();
 
 const rekening = ref(null);
 const allTransactions = ref([]);
@@ -61,11 +106,41 @@ const loading = ref(true);
 
 const typeFilter = ref('all');
 const dateFilter = ref({ start: null, end: null });
-const dateFilterKey = ref(0); // NEW: Key for re-rendering DateRangeFilter
+const dateFilterKey = ref(0);
 const selectedTransactionId = ref(null);
+
+// State for delete modal
+const showDeleteModal = ref(false);
+const deleteConfirmName = ref('');
+const deleteError = ref('');
 
 const showTransactionDetail = (transaction) => {
     selectedTransactionId.value = transaction.id;
+};
+
+const handleTransactionDeleted = (deletedId) => {
+    selectedTransactionId.value = null; // Close sidebar
+    allTransactions.value = allTransactions.value.filter(t => t.id !== deletedId);
+};
+
+const handleTransactionUpdated = async () => {
+    await fetchData(props.id);
+};
+
+const handleDeleteRekening = async () => {
+    if (deleteConfirmName.value !== rekening.value?.name) return;
+    
+    deleteError.value = '';
+    const response = await deleteRekening(props.id);
+    if (response.success) {
+        showDeleteModal.value = false;
+        alert(`Rekening '${rekening.value.name}' is verwijderd.`);
+        // After deletion, navigating to the dashboard is a safe action.
+        // The sidebar won't update without a page reload or state management, but this prevents errors.
+        router.push('/'); 
+    } else {
+        deleteError.value = response.message || 'Kon de rekening niet verwijderen.';
+    }
 };
 
 const fetchData = async (rekeningId) => {
@@ -84,11 +159,10 @@ const fetchData = async (rekeningId) => {
     loading.value = false;
 };
 
-// NEW: Function to clear all active filters
 const clearFilters = () => {
     typeFilter.value = 'all';
     dateFilter.value = { start: null, end: null };
-    dateFilterKey.value++; // Increment key to force DateRangeFilter to re-render and reset
+    dateFilterKey.value++; 
 };
 
 const filteredTransactions = computed(() => {
@@ -117,6 +191,10 @@ const filteredTransactions = computed(() => {
 });
 
 watch(() => props.id, (newId) => {
+    // Reset delete confirmation when navigating to a new rekening
+    showDeleteModal.value = false;
+    deleteConfirmName.value = '';
+    deleteError.value = '';
     fetchData(newId);
 }, { immediate: true });
 

@@ -28,6 +28,19 @@ export const deleteFactuur = (factuurId) => {
     mockFacturen = mockFacturen.filter(f => f.id !== factuurId);
     return apiCall({ success: true });
 };
+
+
+export const deleteRekening = (rekeningId) => {
+    const transactionsExist = mockTransacties.some(t => t.rekening_id === rekeningId);
+    if (transactionsExist) {
+        return apiCall({ success: false, message: 'Rekening has transactions and cannot be deleted.' }, 100);
+    }
+    const initialLength = mockRekeningen.length;
+    mockRekeningen = mockRekeningen.filter(r => r.id !== rekeningId);
+    const success = mockRekeningen.length < initialLength;
+    return apiCall({ success });
+};
+
 export const connectFactuurToTransaction = (factuurId, transactionId) => {
     const factuur = mockFacturen.find(f => f.id === factuurId);
     if (factuur) {
@@ -59,9 +72,28 @@ export const getTransactions = ({ rekeningId = null, partyId = null } = {}) => {
     return apiCall(transactions);
 };
 export const getTransactionById = (id) => apiCall(mockTransacties.find(t => t.id === id));
+export const setTransactionStatus = (transactionId, status) => {
+    const transaction = mockTransacties.find(t => t.id === transactionId);
+    if (transaction) {
+        transaction.status = status;
+        return apiCall(transaction);
+    }
+    return apiCall(null, 404);
+};
+export const deleteTransaction = (transactionId) => {
+    const initialLength = mockTransacties.length;
+    mockTransacties = mockTransacties.filter(t => t.id !== transactionId);
 
+    // Also disconnect any factuur linked to this transaction
+    const linkedFactuur = mockFacturen.find(f => f.transaction_id === transactionId);
+    if (linkedFactuur) {
+        linkedFactuur.transaction_id = null;
+    }
+    
+    const success = mockTransacties.length < initialLength;
+    return apiCall({ success });
+};
 
-// --- NEW FUNCTIONS ---
 export const getOrganization = () => {
     return new Promise(resolve => {
         setTimeout(() => {
