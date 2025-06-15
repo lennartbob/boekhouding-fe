@@ -22,17 +22,13 @@
                 <DateRangeFilter @update="dateFilter = $event" />
             </div>
         </div>
-        <TransactionTable :transactions="filteredTransactions" />
+        <TransactionTable :transactions="filteredTransactions" @row-click="showTransactionDetail" />
         <DetailSidebar title="Transaction Details" :show="!!selectedTransactionId" @close="selectedTransactionId = null">
             <TransactionDetail v-if="selectedTransactionId" :transaction-id="selectedTransactionId" />
         </DetailSidebar>
       </div>
     </div>
 
-    <div v-else class="text-center mt-16">
-      <h2 class="text-xl font-semibold text-gray-600">Select an Account</h2>
-      <p class="text-gray-500">Please select an account from the sidebar to view its details.</p>
-    </div>
   </div>
 </template>
 
