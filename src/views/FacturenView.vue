@@ -32,8 +32,16 @@ import { getFacturen } from '../api/mockApi';
 import AppTable from '../components/common/AppTable.vue';
 import DetailSidebar from '../components/common/DetailSidebar.vue';
 import FactuurDetail from '../components/specific/FactuurDetail.vue';
+
 const facturen = ref([]);
 const selectedFactuur = ref(null);
+
+// FIX: Define the headers for the AppTable component
+const headers = [
+  { key: 'factuur_nr', label: 'Factuurnummer' },
+  { key: 'datum', label: 'Datum' },
+  { key: 'type', label: 'Type' },
+];
 
 const fetchFacturen = async () => {
     facturen.value = await getFacturen();

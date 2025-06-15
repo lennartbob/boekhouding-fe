@@ -1,7 +1,6 @@
 <!-- src/components/specific/PartyDetail.vue -->
 <template>
   <div v-if="party" class="space-y-4">
-    <!-- ... other party details ... -->
     <div>
       <h4 class="text-sm font-medium text-gray-500">Adres</h4>
       <p class="mt-1 text-gray-900">{{ party.adres }}</p>

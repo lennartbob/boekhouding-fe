@@ -1,7 +1,6 @@
 <!-- src/views/PartiesView.vue -->
 <template>
   <div>
-    <h2 class="text-2xl font-semibold text-gray-700">Parties</h2>
     <div class="flex justify-between items-center">
         <h2 class="text-2xl font-semibold text-gray-700">Parties</h2>
         <BaseButton @click="showAddPartyModal = true">New Party</BaseButton>

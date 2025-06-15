@@ -1,19 +1,38 @@
 <!-- src/views/RekeningenView.vue -->
 <template>
   <div>
-    <!-- ... (v-if loading / rekening) ... -->
-    <div v-if="rekening">
-        <!-- ... h2, SaldoChart, filters ... -->
-        <div class="mt-8">
-            <!-- ... filter bar ... -->
-            <TransactionTable :transactions="filteredTransactions" @row-click="showTransactionDetail" />
-        </div>
-    </div>
-    <!-- ... v-else ... -->
+    <div v-if="loading" class="text-center text-gray-500">Loading account details...</div>
     
-    <DetailSidebar title="Transaction Details" :show="!!selectedTransactionId" @close="selectedTransactionId = null">
-        <TransactionDetail v-if="selectedTransactionId" :transaction-id="selectedTransactionId" />
-    </DetailSidebar>
+    <div v-else-if="rekening">
+      <h2 class="text-2xl font-semibold text-gray-700">{{ rekening.name }} - {{ formatCurrency(rekening.saldo) }}</h2>
+
+      <div class="mt-8">
+        <SaldoChart :transactions="allTransactions" :initial-saldo="rekening.saldo"/>
+      </div>
+
+      <div class="mt-8">
+        <div class="flex justify-between items-center mb-4 p-4 bg-white rounded-lg shadow">
+            <h3 class="text-lg font-semibold">Transactions</h3>
+            <div class="flex items-center space-x-4">
+                <select v-model="typeFilter" class="form-input">
+                    <option value="all">All Types</option>
+                    <option value="INCOME">Income</option>
+                    <option value="EXPENSE">Expense</option>
+                </select>
+                <DateRangeFilter @update="dateFilter = $event" />
+            </div>
+        </div>
+        <TransactionTable :transactions="filteredTransactions" />
+        <DetailSidebar title="Transaction Details" :show="!!selectedTransactionId" @close="selectedTransactionId = null">
+            <TransactionDetail v-if="selectedTransactionId" :transaction-id="selectedTransactionId" />
+        </DetailSidebar>
+      </div>
+    </div>
+
+    <div v-else class="text-center mt-16">
+      <h2 class="text-xl font-semibold text-gray-600">Select an Account</h2>
+      <p class="text-gray-500">Please select an account from the sidebar to view its details.</p>
+    </div>
   </div>
 </template>
 
@@ -30,11 +49,14 @@ const props = defineProps({ id: String });
 const rekening = ref(null);
 const allTransactions = ref([]);
 const loading = ref(false);
-const selectedTransactionId = ref(null);
 
 const typeFilter = ref('all');
 const dateFilter = ref({ start: null, end: null });
+const selectedTransactionId = ref(null); // NEW: Track selected transaction
 
+const showTransactionDetail = (transaction) => {
+    selectedTransactionId.value = transaction.id;
+};
 const fetchData = async (rekeningId) => {
     if (!rekeningId) {
         rekening.value = null;
@@ -50,9 +72,7 @@ const fetchData = async (rekeningId) => {
     allTransactions.value = transactionsData;
     loading.value = false;
 };
-const showTransactionDetail = (transaction) => {
-    selectedTransactionId.value = transaction.id;
-};
+
 const filteredTransactions = computed(() => {
     return allTransactions.value.filter(t => {
         const typeMatch = typeFilter.value === 'all' || t.type === typeFilter.value;
